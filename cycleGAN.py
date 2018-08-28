@@ -1,6 +1,7 @@
 ############################################################
-# model Code refers to https://github.com/aitorzip/PyTorch-CycleGAN/blob/master/models.py 
+# model Code refers to https://github.com/aitorzip/PyTorch-CycleGAN/blob/master/models.py
 # Reference PyTorch Example Code, https://github.com/pytorch/examples/tree/master/dcgan
+# Modify the code from dcgan to CycleGAN
 # Changed By Jinwei
 ############################################################
 from __future__ import print_function
@@ -18,7 +19,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 import itertools
 from torch.autograd import Variable
-from tensorboardX import SummaryWriter 
+from tensorboardX import SummaryWriter
 
 
 parser = argparse.ArgumentParser()
@@ -125,7 +126,7 @@ class Generator(nn.Module):
     def __init__(self, input_nc, output_nc, n_residual_blocks=2):
         super(Generator, self).__init__()
 
-        # Initial convolution block       
+        # Initial convolution block
         model = [   nn.ReflectionPad2d(3),
                     nn.Conv2d(input_nc, 64, 7),
                     nn.InstanceNorm2d(64),
@@ -173,15 +174,15 @@ class Discriminator(nn.Module):
                     nn.LeakyReLU(0.2, inplace=True) ]
 
         model += [  nn.Conv2d(64, 128, 4, stride=2, padding=1),
-                    nn.InstanceNorm2d(128), 
+                    nn.InstanceNorm2d(128),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
         model += [  nn.Conv2d(128, 256, 4, stride=2, padding=1),
-                    nn.InstanceNorm2d(256), 
+                    nn.InstanceNorm2d(256),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
         model += [  nn.Conv2d(256, 512, 4, padding=1),
-                    nn.InstanceNorm2d(512), 
+                    nn.InstanceNorm2d(512),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
         # FCN classification layer
@@ -249,18 +250,18 @@ for epoch in range(opt.niter):
         real_B = data_B[0].to(device)
         batch_size = real_A.size(0)
         # print('[%d/%d]' % (i, batchs_lenth-1))
-  
-        
+
+
         label_real = torch.full((real_A.size(0),), real_label, device=device)
         label_fake = torch.full((real_B.size(0),), fake_label, device=device)
-        
+
         ############################
         # (1) Generators A2B, B2A
         ###########################
         optimizerG.zero_grad()
-    
+
         # Identity Loss
-        
+
         B_origin = netG_A2B(real_B)
         loss_idt_B = criterion_Identity(B_origin,real_B)*10.0*0.5
         A_origin = netG_B2A(real_A)
@@ -290,9 +291,9 @@ for epoch in range(opt.niter):
         # Total G Loss
         loss_G = loss_idt_A + loss_idt_B + loss_G_A2B + loss_G_B2A + loss_cycled_A + loss_cycled_B
         epoch_error_G_Total += loss_G
-        
-        
-        
+
+
+
         # Backward
         loss_G.backward()
         optimizerG.step()
@@ -336,7 +337,7 @@ for epoch in range(opt.niter):
         ###########################
 
 
-        
+
 
         # print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
         #       % (epoch, opt.niter, i, len(dataloader),
@@ -351,7 +352,7 @@ for epoch in range(opt.niter):
     print('[%d/%d] Loss_G_Total: %.4f Loss_D_A: %.4f Loss_D_B: %.4f'
         % (epoch, opt.niter,
             epoch_error_G_Total.item(), epoch_error_D_A.item(), epoch_error_D_B.item()))
-    
+
     writer.add_scalar('data/Loss_G_Total',epoch_error_G_Total.item() , epoch)
     writer.add_scalar('data/Loss_D_A',epoch_error_D_A.item() , epoch)
     writer.add_scalar('data/Loss_D_B',epoch_error_D_B.item() , epoch)
